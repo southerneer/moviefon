@@ -1,5 +1,6 @@
 {
   "expo": {
     "sdkVersion": "15.0.0"
-  }
+  },
+  "react-native": "0.43.0"
 }

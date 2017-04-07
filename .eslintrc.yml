@@ -1,0 +1,29 @@
+---
+
+parser: babel-eslint
+
+globals:
+
+extends:
+- rackt
+- standard-react
+- plugin:eslint-plugin-import/warnings
+- plugin:eslint-plugin-import/errors
+
+plugins:
+- react
+
+settings:
+  import/extensions: ['.js']
+
+rules:
+  array-bracket-spacing: 0      # [loosen] override rackt
+  comma-dangle: 0               # [loosen] override rackt
+  object-curly-spacing: 0       # [loosen] override rackt
+  no-console: 0                 # [loosen] override upstream (?)
+  keyword-spacing: 2
+  space-infix-ops: 2
+  brace-style: [2, "1tbs", { "allowSingleLine": true }]
+  no-redeclare: 1
+  no-unused-vars: [2, {vars: all, args: none}]
+  react/jsx-no-bind: [2, {allowArrowFunctions: true}] # Should reconsider arrow functions
