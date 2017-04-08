@@ -23,20 +23,20 @@ type Props = {
   search: Function,
   searchText: string,
   movies: Object[],
-  isGettingMore: boolean,
+  listState: Object,
 }
 
 const App = (props: Props) => {
-  const {favoriteList, history, loadSearch} = props
+  const {changeText, favorite, favoriteList, getMore, isFavorite, history, listState, loadSearch, movies, pending, search, searchText} = props
   return (
     <SideMenu menu={<MenuPanel favorites={favoriteList} history={history} loadSearch={loadSearch} />}>
       <View style={styles.container}>
         <Text h2 style={styles.heading}>MovieFōn</Text>
         <View style={styles.topRow}>
-          <SearchBox {..._.pick(props, ['search', 'pending', 'changeText', 'searchText'])} />
-          <FavoriteButton {..._.pick(props, ['isFavorite', 'favorite', 'searchText'])} />
+          <SearchBox search={search} pending={pending} changeText={changeText} searchText={searchText} />
+          <FavoriteButton isFavorite={isFavorite} favorite={favorite} searchText={searchText} />
         </View>
-        <MovieList {..._.pick(props, ['getMore', 'movies', 'isGettingMore'])} />
+        <MovieList getMore={getMore} movies={movies} isGettingMore={listState.isGettingMore} />
       </View>
     </SideMenu>
   )

@@ -1,3 +1,5 @@
+// @flow
+
 import React from 'react'
 import { ActivityIndicator, ListView, StyleSheet, Text } from 'react-native'
 import { ListItem } from 'react-native-elements'
@@ -6,7 +8,9 @@ import { compose, withHandlers, withState, withPropsOnChange } from 'recompose'
 type Props = {
   dataSource: Object,
   getMore: Function,
+  movies: Object[],
   renderFooter: Function,
+  isGettingMore: boolean,
 }
 
 const MovieList = (props: Props) => (
@@ -38,9 +42,8 @@ const MovieList = (props: Props) => (
 const getNewDataSource = () => (new ListView.DataSource({rowHasChanged: (m1, m2) => m1.imdbID !== m2.imdbID}))
 
 const enhance = compose(
-  withState('nextPage', 'setNextPage', 2),
   withState('dataSource', 'setDataSource', getNewDataSource()),
-  withPropsOnChange(['movies'], (props) => {
+  withPropsOnChange(['movies'], (props: Props) => {
     const {dataSource, movies} = props
     let newDS = movies.length ? dataSource.cloneWithRows(movies) : getNewDataSource()
     return {
@@ -49,7 +52,7 @@ const enhance = compose(
     }
   }),
   withHandlers({
-    renderFooter: ({isGettingMore, movies}) => () => {
+    renderFooter: ({isGettingMore, movies}: Props) => () => {
       if (!movies.length) {
         return (<Text style={styles.placeholder}>Movies will show here after a search</Text>)
         // return (<ActivityIndicator style={styles.activity} size="large" />)
