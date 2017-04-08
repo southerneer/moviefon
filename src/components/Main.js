@@ -4,7 +4,7 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { compose, withState, withHandlers, withProps, } from 'recompose'
 import _ from 'lodash'
-import SideMenu from 'react-native-side-menu'
+import { SideMenu } from 'react-native-elements'
 
 import MovieList from './MovieList'
 import SearchBox from './SearchBox'
@@ -15,6 +15,8 @@ type Props = {
   favorite: Function,
   favoriteList: string[],
   getMore: Function,
+  history: string[],
+  loadSearch: Function,
   isFavorite: boolean,
   pending: boolean,
   search: Function,
@@ -25,8 +27,9 @@ type Props = {
 }
 
 const App = (props: Props) => {
+  const {favoriteList, history, loadSearch} = props
   return (
-    <SideMenu menu={<MenuPanel favorites={props.favoriteList} />}>
+    <SideMenu menu={<MenuPanel favorites={favoriteList} history={history} loadSearch={loadSearch} />}>
       <View style={styles.container}>
         <View style={styles.topRow}>
           <SearchBox {..._.pick(props, ['search', 'pending', 'setSearchText', 'searchText'])} />
@@ -44,15 +47,16 @@ const enhance = compose(
   withState('searchText', 'setSearchText', ''),
   withState('movies', 'setMovies', []),
   withState('nextPage', 'setNextPage', 2),
-  // withState('isFavorite', 'setFavorite', false),
   withState('favoriteList', 'setFavoriteList', []),
+  withState('history', 'setHistory', []),
   withProps((props) => ({
     ...props,
     isFavorite: props.searchText !== '' && props.favoriteList.includes(props.searchText)
   })),
   withHandlers({
     search: (props) => async () => {
-      const {searchText, setPending, setNextPage, setMovies, setListState} = props
+      const {history, searchText, setHistory, setPending, setNextPage, setMovies, setListState} = props
+      if (searchText === '') return
       setPending(true)
       setListState({hasMore: true, isGettingMore: false})
       setMovies([])
@@ -60,6 +64,7 @@ const enhance = compose(
       const results = await searchMovies(searchText, 1)
       if (results) {
         setMovies(results)
+        setHistory(_.union(history, [searchText]))
       }
       setPending(false)
     },
@@ -81,7 +86,6 @@ const enhance = compose(
     },
     favorite: ({isFavorite, setFavoriteList, favoriteList, searchText}) => () => {
       if (searchText === '') return
-
       if (isFavorite) {
         setFavoriteList(favoriteList.filter(f => f !== searchText))
       } else {
@@ -90,8 +94,14 @@ const enhance = compose(
           searchText
         ])
       }
-    }
+    },
   }),
+  withHandlers({
+    loadSearch: ({search, setSearchText}) => (text) => {
+      setSearchText(text)
+      search()
+    }
+  })
 )
 
 const searchMovies = async (text, page) => {

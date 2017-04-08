@@ -3,23 +3,37 @@
 import React from 'react'
 import {
   StyleSheet,
-  Text,
+  TouchableOpacity,
   View,
 } from 'react-native'
+import { Text } from 'react-native-elements'
 
 type Props = {
   favorites: string[],
+  history: string[],
+  loadSearch: Function,
 }
 
+const TextLink = ({loadSearch, text}) => (
+  <TouchableOpacity  onPress={() => loadSearch(text)}>
+    <Text>{text}</Text>
+  </TouchableOpacity>
+)
+
 export default (props: Props) => {
-  console.log('menupanl props', props)
   return (
     <View style={styles.container}>
-      <Text>f</Text>
+      <Text h3>Favorites</Text>
       {props.favorites.map(f => (
-        <Text key={f}>{f}</Text>
+        <TextLink loadSearch={props.loadSearch} text={f} key={'k' + f} />
       ))}
 
+      <View style={{marginTop: 20}}>
+        <Text h3>History</Text>
+        {props.history.map(h => (
+          <TextLink loadSearch={props.loadSearch} text={h} key={'h' + h} />
+        ))}
+      </View>
     </View>
   )
 }
