@@ -2,25 +2,24 @@
 
 import React from 'react'
 import {
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native'
 
 type Props = {
-
+  favorites: string[],
 }
 
 export default (props: Props) => {
+  console.log('menupanl props', props)
   return (
     <View style={styles.container}>
-      {/* <ScrollView
-        keyboardDismissMode="on-drag"
-        contentContainerStyle={[styles.scrollView]}
-        > */}
-        <Text>Hello</Text>
-      {/* </ScrollView> */}
+      <Text>f</Text>
+      {props.favorites.map(f => (
+        <Text key={f}>{f}</Text>
+      ))}
+
     </View>
   )
 }
@@ -29,6 +28,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+    paddingTop: 30,
     // borderColor: LIGHT_GREY,
     // borderWidth: 1,
   },

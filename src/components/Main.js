@@ -2,9 +2,8 @@
 
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
-import { compose, withState, withHandlers } from 'recompose'
+import { compose, withState, withHandlers, withProps, } from 'recompose'
 import _ from 'lodash'
-import { Icon } from 'react-native-elements'
 import SideMenu from 'react-native-side-menu'
 
 import MovieList from './MovieList'
@@ -14,6 +13,7 @@ import FavoriteButton from './FavoriteButton'
 
 type Props = {
   favorite: Function,
+  favoriteList: string[],
   getMore: Function,
   isFavorite: boolean,
   pending: boolean,
@@ -22,24 +22,13 @@ type Props = {
   setSearchText: Function,
   movies: Object[],
   isGettingMore: boolean,
-  // menuOpen: boolean,
-  // toggleMenu: Function,
 }
 
 const App = (props: Props) => {
   return (
-    <SideMenu
-      // disableGestures
-      // isOpen={props.menuOpen}
-      menu={<MenuPanel />}
-      // onChange={isOpen => actions.setMenuPanel(isOpen ? OPEN : CLOSED)}
-    >
+    <SideMenu menu={<MenuPanel favorites={props.favoriteList} />}>
       <View style={styles.container}>
         <View style={styles.topRow}>
-          {/* <Icon name="bars" type="font-awesome" onPress={() => {
-            console.log('pressed')
-            props.toggleMenu(!props.menuOpen)
-          }} /> */}
           <SearchBox {..._.pick(props, ['search', 'pending', 'setSearchText', 'searchText'])} />
           <FavoriteButton {..._.pick(props, ['isFavorite', 'favorite'])} />
         </View>
@@ -55,8 +44,12 @@ const enhance = compose(
   withState('searchText', 'setSearchText', ''),
   withState('movies', 'setMovies', []),
   withState('nextPage', 'setNextPage', 2),
-  // withState('menuOpen', 'toggleMenu', false),
-  withState('isFavorite', 'setFavorite', false),
+  // withState('isFavorite', 'setFavorite', false),
+  withState('favoriteList', 'setFavoriteList', []),
+  withProps((props) => ({
+    ...props,
+    isFavorite: props.searchText !== '' && props.favoriteList.includes(props.searchText)
+  })),
   withHandlers({
     search: (props) => async () => {
       const {searchText, setPending, setNextPage, setMovies, setListState} = props
@@ -86,9 +79,17 @@ const enhance = compose(
         setListState({hasMore: false, isGettingMore: false})
       }
     },
-    favorite: ({isFavorite, setFavorite}) => () => {
-      setFavorite(!isFavorite)
-      // @TODO: finish logic here
+    favorite: ({isFavorite, setFavoriteList, favoriteList, searchText}) => () => {
+      if (searchText === '') return
+
+      if (isFavorite) {
+        setFavoriteList(favoriteList.filter(f => f !== searchText))
+      } else {
+        setFavoriteList([
+          ...favoriteList,
+          searchText
+        ])
+      }
     }
   }),
 )

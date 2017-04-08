@@ -11,6 +11,12 @@ type Props = {
 export default ({isFavorite, favorite}: Props) => {
   const iconName = isFavorite ? 'heart' : 'heart-o'
   return (
-    <Icon name={iconName} type="font-awesome" color="red" onPress={favorite} />
+    <Icon
+      name={iconName}
+      type="font-awesome"
+      color="red"
+      onPress={favorite}
+      containerStyle={{marginHorizontal: 5}}
+    />
   )
 }
