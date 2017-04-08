@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListView, StyleSheet, Text } from 'react-native'
+import { ActivityIndicator, ListView, StyleSheet, Text, View } from 'react-native'
 import { ListItem } from 'react-native-elements'
 import { compose, withHandlers, withState, withPropsOnChange } from 'recompose'
 
@@ -42,7 +42,6 @@ const enhance = compose(
   withState('dataSource', 'setDataSource', getNewDataSource()),
   withPropsOnChange(['movies'], (props) => {
     const {dataSource, movies} = props
-    console.log('withPropsOnChange', movies.length)
     let newDS = movies.length ? dataSource.cloneWithRows(movies) : getNewDataSource()
     return {
       ...props,
@@ -50,10 +49,13 @@ const enhance = compose(
     }
   }),
   withHandlers({
-    renderFooter: ({isGettingMore}) => () => {
-      return (
-        <Text>{isGettingMore ? 'Retrieving!' : 'no more'}</Text>
-      )
+    renderFooter: ({isGettingMore, movies}) => () => {
+      if (!movies.length) {
+        return (<Text style={styles.placeholder}>Movies will show here after a search</Text>)
+      } else {
+        if (isGettingMore) return (<ActivityIndicator style={styles.activity} size="large" />)
+        else return (null)
+      }
     }
   }),
 )
@@ -64,5 +66,13 @@ const styles = StyleSheet.create({
   list: {
     flex: 1,
     marginTop: 0,
+  },
+  placeholder: {
+    marginVertical: 30,
+    color: '#DCDDDF',
+    alignSelf: 'center'
+  },
+  activity: {
+    marginVertical: 10
   }
 })

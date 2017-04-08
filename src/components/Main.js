@@ -4,7 +4,7 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { compose, withState, withHandlers, withProps, } from 'recompose'
 import _ from 'lodash'
-import { SideMenu } from 'react-native-elements'
+import { SideMenu, Text } from 'react-native-elements'
 
 import MovieList from './MovieList'
 import SearchBox from './SearchBox'
@@ -12,6 +12,7 @@ import MenuPanel from './MenuPanel'
 import FavoriteButton from './FavoriteButton'
 
 type Props = {
+  changeText: Function,
   favorite: Function,
   favoriteList: string[],
   getMore: Function,
@@ -21,7 +22,6 @@ type Props = {
   pending: boolean,
   search: Function,
   searchText: string,
-  setSearchText: Function,
   movies: Object[],
   isGettingMore: boolean,
 }
@@ -31,9 +31,10 @@ const App = (props: Props) => {
   return (
     <SideMenu menu={<MenuPanel favorites={favoriteList} history={history} loadSearch={loadSearch} />}>
       <View style={styles.container}>
+        <Text h2 style={styles.heading}>MovieFōn</Text>
         <View style={styles.topRow}>
-          <SearchBox {..._.pick(props, ['search', 'pending', 'setSearchText', 'searchText'])} />
-          <FavoriteButton {..._.pick(props, ['isFavorite', 'favorite'])} />
+          <SearchBox {..._.pick(props, ['search', 'pending', 'changeText', 'searchText'])} />
+          <FavoriteButton {..._.pick(props, ['isFavorite', 'favorite', 'searchText'])} />
         </View>
         <MovieList {..._.pick(props, ['getMore', 'movies', 'isGettingMore'])} />
       </View>
@@ -54,12 +55,16 @@ const enhance = compose(
     isFavorite: props.searchText !== '' && props.favoriteList.includes(props.searchText)
   })),
   withHandlers({
+    changeText: ({setSearchText, setMovies}) => (text) => {
+      if (text === '') setMovies([])
+      setSearchText(text)
+    },
     search: (props) => async () => {
       const {history, searchText, setHistory, setPending, setNextPage, setMovies, setListState} = props
       if (searchText === '') return
       setPending(true)
       setListState({hasMore: true, isGettingMore: false})
-      setMovies([])
+      // setMovies([])
       setNextPage(2)
       const results = await searchMovies(searchText, 1)
       if (results) {
@@ -99,7 +104,8 @@ const enhance = compose(
   withHandlers({
     loadSearch: ({search, setSearchText}) => (text) => {
       setSearchText(text)
-      search()
+      // @HACK
+      setTimeout(search, 200)
     }
   })
 )
@@ -111,15 +117,13 @@ const searchMovies = async (text, page) => {
     `page=${page}`
   ]
   try {
-    console.log('fetching', text, page)
     let result = await fetch(`http://www.omdbapi.com/?${params.join('&')}`, {
       method: 'GET',
     })
     result = await result.json()
-    console.log('result', result.Search && result.Search.length)
     return result.Search
   } catch (err) {
-    console.log('error', err)
+    console.error('error', err)
     return null
   }
 }
@@ -133,6 +137,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'stretch',
     justifyContent: 'center',
+  },
+  heading: {
+    alignSelf: 'center',
+    marginVertical: 10,
   },
   topRow: {
     flexDirection: 'row'
