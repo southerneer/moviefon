@@ -2,53 +2,64 @@
 
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
-import { SearchBar } from 'react-native-elements'
 import { compose, withState, withHandlers } from 'recompose'
+import _ from 'lodash'
+import { Icon } from 'react-native-elements'
+import SideMenu from 'react-native-side-menu'
 
 import MovieList from './MovieList'
+import SearchBox from './SearchBox'
+import MenuPanel from './MenuPanel'
+import FavoriteButton from './FavoriteButton'
 
 type Props = {
+  favorite: Function,
   getMore: Function,
+  isFavorite: boolean,
   pending: boolean,
   search: Function,
   searchText: string,
   setSearchText: Function,
   movies: Object[],
   isGettingMore: boolean,
+  // menuOpen: boolean,
+  // toggleMenu: Function,
 }
 
 const App = (props: Props) => {
-  const {getMore, search, searchText, setSearchText, movies, pending, isGettingMore} = props
-
   return (
-    <View style={styles.container}>
-      <SearchBar
-        containerStyle={styles.search}
-        clearButtonMode="always"
-        editable={!pending}
-        lightTheme
-        onChangeText={setSearchText}
-        onEndEditing={search}
-        placeholder="Search"
-        showLoadingIcon={pending}
-        value={searchText}
-      />
-      <MovieList getMore={getMore} movies={movies} isGettingMore={isGettingMore} />
-    </View>
+    <SideMenu
+      // disableGestures
+      // isOpen={props.menuOpen}
+      menu={<MenuPanel />}
+      // onChange={isOpen => actions.setMenuPanel(isOpen ? OPEN : CLOSED)}
+    >
+      <View style={styles.container}>
+        <View style={styles.topRow}>
+          {/* <Icon name="bars" type="font-awesome" onPress={() => {
+            console.log('pressed')
+            props.toggleMenu(!props.menuOpen)
+          }} /> */}
+          <SearchBox {..._.pick(props, ['search', 'pending', 'setSearchText', 'searchText'])} />
+          <FavoriteButton {..._.pick(props, ['isFavorite', 'favorite'])} />
+        </View>
+        <MovieList {..._.pick(props, ['getMore', 'movies', 'isGettingMore'])} />
+      </View>
+    </SideMenu>
   )
 }
 
 const enhance = compose(
   withState('pending', 'setPending', false),
   withState('listState', 'setListState', {hasMore: true, isGettingMore: false}),
-  // withState('isGettingMore', 'setIsGettingMore', false),
-  // withState('hasMore', 'setHasMore', true),
   withState('searchText', 'setSearchText', ''),
   withState('movies', 'setMovies', []),
   withState('nextPage', 'setNextPage', 2),
+  // withState('menuOpen', 'toggleMenu', false),
+  withState('isFavorite', 'setFavorite', false),
   withHandlers({
     search: (props) => async () => {
-      const {searchText, setPending, setNextPage, movies, setMovies, setListState} = props
+      const {searchText, setPending, setNextPage, setMovies, setListState} = props
       setPending(true)
       setListState({hasMore: true, isGettingMore: false})
       setMovies([])
@@ -65,7 +76,6 @@ const enhance = compose(
 
       if (!movies.length || isGettingMore || !hasMore) return
 
-      // setIsGettingMore(true)
       setListState({...listState, isGettingMore: true})
       const results = await searchMovies(searchText, nextPage)
       if (results && results.length) {
@@ -76,6 +86,10 @@ const enhance = compose(
         setListState({hasMore: false, isGettingMore: false})
       }
     },
+    favorite: ({isFavorite, setFavorite}) => () => {
+      setFavorite(!isFavorite)
+      // @TODO: finish logic here
+    }
   }),
 )
 
@@ -109,11 +123,7 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     justifyContent: 'center',
   },
-  search: {
-
-  },
-  list: {
-    flex: 1,
-    marginTop: 0,
+  topRow: {
+    flexDirection: 'row'
   }
 })
