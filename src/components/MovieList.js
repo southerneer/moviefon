@@ -1,5 +1,5 @@
 import React from 'react'
-import { ActivityIndicator, ListView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, ListView, StyleSheet, Text } from 'react-native'
 import { ListItem } from 'react-native-elements'
 import { compose, withHandlers, withState, withPropsOnChange } from 'recompose'
 
@@ -30,7 +30,7 @@ const MovieList = (props: Props) => (
     style={styles.list}
     enableEmptySections
     onEndReached={props.getMore}
-    onEndReachedThreshold={100}
+    onEndReachedThreshold={500}
     renderFooter={props.renderFooter}
   />
 )
@@ -52,9 +52,10 @@ const enhance = compose(
     renderFooter: ({isGettingMore, movies}) => () => {
       if (!movies.length) {
         return (<Text style={styles.placeholder}>Movies will show here after a search</Text>)
+        // return (<ActivityIndicator style={styles.activity} size="large" />)
       } else {
-        if (isGettingMore) return (<ActivityIndicator style={styles.activity} size="large" />)
-        else return (null)
+        if (isGettingMore) return (<ActivityIndicator size="small" />)
+        else return null
       }
     }
   }),

@@ -44,10 +44,9 @@ const App = (props: Props) => {
 
 const enhance = compose(
   withState('pending', 'setPending', false),
-  withState('listState', 'setListState', {hasMore: true, isGettingMore: false}),
+  withState('listState', 'setListState', {hasMore: true, isGettingMore: false, nextPage: 2}),
   withState('searchText', 'setSearchText', ''),
   withState('movies', 'setMovies', []),
-  withState('nextPage', 'setNextPage', 2),
   withState('favoriteList', 'setFavoriteList', []),
   withState('history', 'setHistory', []),
   withProps((props) => ({
@@ -60,12 +59,10 @@ const enhance = compose(
       setSearchText(text)
     },
     search: (props) => async () => {
-      const {history, searchText, setHistory, setPending, setNextPage, setMovies, setListState} = props
+      const {history, searchText, setHistory, setPending, setMovies, setListState} = props
       if (searchText === '') return
       setPending(true)
-      setListState({hasMore: true, isGettingMore: false})
-      // setMovies([])
-      setNextPage(2)
+      setListState({hasMore: true, isGettingMore: false, nextPage: 2})
       const results = await searchMovies(searchText, 1)
       if (results) {
         setMovies(results)
@@ -74,17 +71,16 @@ const enhance = compose(
       setPending(false)
     },
     getMore: (props) => async () => {
-      const {listState, movies, setMovies, searchText, nextPage, setListState, setNextPage} = props
+      const {listState, movies, setMovies, searchText, setListState} = props
       const {isGettingMore, hasMore} = listState
 
       if (!movies.length || isGettingMore || !hasMore) return
 
       setListState({...listState, isGettingMore: true})
-      const results = await searchMovies(searchText, nextPage)
+      const results = await searchMovies(searchText, listState.nextPage)
       if (results && results.length) {
         setMovies([...movies, ...results])
-        setNextPage(nextPage + 1)
-        setListState({hasMore: true, isGettingMore: false})
+        setListState({hasMore: true, isGettingMore: false, nextPage: listState.nextPage + 1})
       } else {
         setListState({hasMore: false, isGettingMore: false})
       }
@@ -141,6 +137,7 @@ const styles = StyleSheet.create({
   heading: {
     alignSelf: 'center',
     marginVertical: 10,
+    color: 'pink',
   },
   topRow: {
     flexDirection: 'row'

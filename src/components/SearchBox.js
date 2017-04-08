@@ -18,7 +18,7 @@ const SearchBox = ({pending, changeText, search, searchText,}: Props) => (
     lightTheme
     onChangeText={changeText}
     onEndEditing={search}
-    placeholder="Search"
+    placeholder="Search by title"
     showLoadingIcon={pending}
     value={searchText}
   />
